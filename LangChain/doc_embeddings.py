@@ -1,5 +1,5 @@
 import os
-
+from langchain_ollama import ChatOllama
 from langchain_chroma import Chroma
 from langchain_community.document_loaders import Docx2txtLoader, PyPDFLoader
 from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
@@ -11,6 +11,12 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
 os.environ["LANGCHAIN_API_KEY"] = ""
 os.environ["LANGCHAIN_PROJECT"] = "My_2nd_RAG_Project"
+
+llm = ChatOllama(
+    # model="gemini-3.6-flash",
+    model="gemma3:1b",
+    # google_api_key="",
+)
 
 text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=1000, chunk_overlap=200, length_function=len
@@ -27,7 +33,7 @@ text_splitter = RecursiveCharacterTextSplitter(
 # Print the first 500 characters of the first split document
 
 
-# Function to load documents from a folder.
+# FUnction to load a documents from folder and split them into chunks
 def load_documents(folder_path: str) -> list[Document]:
     documents = []
     for filename in os.listdir(folder_path):
@@ -117,9 +123,7 @@ retriever.invoke("When was apex logistics founded?")
 # Chatpromp template
 template = """Answere the question based only on the following 
 Context: {context}
-
 Question: {question}
-
 Answere: 
 """
 prompt = ChatPromptTemplate.from_template(template)
