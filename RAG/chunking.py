@@ -15,9 +15,9 @@ for page in first_page:
     text = page.extract_text()
     split_text = text.split("\n")
     # print(split_text)
-    chunks = [] 
+    chunks = []
     for line in range(0, len(split_text), 2):
-        chunk = " ".join(split_text[line:line+2])
+        chunk = " ".join(split_text[line : line + 2])
         print("chunk:", chunk)
         chunks.append(chunk)
     for chunk in chunks:

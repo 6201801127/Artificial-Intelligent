@@ -1,6 +1,5 @@
 import chromadb
 
-
 """ ****Method 1: Using ChromaDB (The Easy Way)
 """
 
@@ -34,7 +33,7 @@ model = SentenceTransformer("all-MiniLM-L6-v2")
 # 2. Define your stored database documents
 stored_documents = [
     "Python is an interpreted programming language.",
-    "I saw a huge python snake at the zoo yesterday."
+    "I saw a huge python snake at the zoo yesterday.",
 ]
 
 # 3. Define the user's search query

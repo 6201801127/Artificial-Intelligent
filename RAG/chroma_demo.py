@@ -4,6 +4,7 @@
 
 # 2. Initialize Client and Collection
 import os
+
 import chromadb
 from sentence_transformers import SentenceTransformer
 
@@ -17,9 +18,12 @@ collection = client.get_or_create_collection(name="knowledge_base")
 # 3. Add Documents
 
 collection.add(
-    documents=["Python is an interpreted programming language.", "ChromaDB uses HNSW for vector indexing."],
+    documents=[
+        "Python is an interpreted programming language.",
+        "ChromaDB uses HNSW for vector indexing.",
+    ],
     metadatas=[{"category": "dev"}, {"category": "database"}],
-    ids=["doc1", "doc2"]
+    ids=["doc1", "doc2"],
 )
 
 
@@ -52,9 +56,7 @@ print(f"Your folder is physically located here:\n{absolute_path}")
 collection = client.get_collection(name="knowledge_base")
 
 # 2. Fetch data including the raw mathematical vectors
-data = collection.get(
-    include=["embeddings", "documents", "metadatas"]
-)
+data = collection.get(include=["embeddings", "documents", "metadatas"])
 
 print("Data fetched successfully from the database.", data)
 # 3. Inspect the stored data
@@ -64,7 +66,6 @@ print("Data fetched successfully from the database.", data)
 # print("First raw vector embedding array:", data["embeddings"])
 
 
-
 # 1. Load ChromaDB's default embedding model
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
@@ -72,7 +73,7 @@ model = SentenceTransformer("all-MiniLM-L6-v2")
 sentences = [
     "Python is an interpreted programming language.",
     "I saw a huge python snake at the zoo yesterday.",  # Same word, different context!
-    "Java is another coding language."                  # Different words, same context!
+    "Java is another coding language.",  # Different words, same context!
 ]
 
 print("Converting sentences to embeddings behind the scenes...\n")
