@@ -12,4 +12,4 @@ for event in interation:
     if event.event_type == "step.delta" and event.delta.type == "text":
         print(event.delta.text, end="", flush=True)
 
-    stream=True,  #
+    stream = (True,)  #

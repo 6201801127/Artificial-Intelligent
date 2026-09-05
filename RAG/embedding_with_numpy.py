@@ -18,6 +18,7 @@ vector2 = result2.embeddings[0].values
 print(f"Vector 1: {len(vector1)}")
 print(f"Vector 2: {len(vector2)}")
 
+
 def cosine_similarity(vec1, vec2):
     dot_product = np.dot(vec1, vec2)
     norm_vec1 = np.linalg.norm(vec1)
