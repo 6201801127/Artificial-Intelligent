@@ -22,12 +22,19 @@ text_splitter = RecursiveCharacterTextSplitter(
 # split_docx_documents = text_splitter.split_documents(docx_documents)
 # print(f"Number of split docx documents: {len(split_docx_documents)}")
 # print(split_docx_documents[0])
+
 # print(split_docx_documents[1])  # Print the first 500 characters of the first split document
 # Print the first 500 characters of the first split document
 
 
 # FUnction to load a documents from folder and split them into chunks
 def load_documents(folder_path: str) -> list[Document]:
+
+# Print the first 500 characters of the first split document
+  # Print the first 500 characters of the first split document
+
+# FUnction to load a documents from folder and split them into chunks
+def load_documents(folder_path: str) -> List[Document]:
     documents = []
     for filename in os.listdir(folder_path):
         file_path = os.path.join(folder_path, filename)
@@ -40,7 +47,6 @@ def load_documents(folder_path: str) -> list[Document]:
         loaded_documents = loader.load()
         documents.extend(loaded_documents)
     return documents
-
 
 folder_path = "artificial-intelligent/LangChain/docs"
 documents = load_documents(folder_path)

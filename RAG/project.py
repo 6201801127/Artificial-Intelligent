@@ -30,7 +30,10 @@ question_vector = question_result.embeddings[0].values
 
 # 3. Compare similarity
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 8e4e6f0b22e23572c3690c4a3d9c9c54046a429f
 def cosine_similarity(a, b):
     a = np.array(a)
     b = np.array(b)
