@@ -27,14 +27,8 @@ text_splitter = RecursiveCharacterTextSplitter(
 # Print the first 500 characters of the first split document
 
 
-# FUnction to load a documents from folder and split them into chunks
+# Function to load documents from a folder.
 def load_documents(folder_path: str) -> list[Document]:
-
-# Print the first 500 characters of the first split document
-  # Print the first 500 characters of the first split document
-
-# FUnction to load a documents from folder and split them into chunks
-def load_documents(folder_path: str) -> List[Document]:
     documents = []
     for filename in os.listdir(folder_path):
         file_path = os.path.join(folder_path, filename)
@@ -149,7 +143,7 @@ rag_chain.invoke({"When was apex logistics founded?"})
 rag_chain = (
     {"context": retriever | doc2str, "question": RunnablePassthrough()}
     | prompt
-    | llm
+    | llm 
     | strOutputParser()
 )
 
