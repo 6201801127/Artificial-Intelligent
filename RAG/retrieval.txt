@@ -1,0 +1,525 @@
+Absolutely. Since you are learning **RAG**, let's focus only on **retrieval** first, without jumping into generation.
+
+# What is Retrieval?
+
+In RAG, **retrieval means finding the most relevant pieces of information from your knowledge base for a user's question.**
+
+Suppose we have your `leave_policy.txt`.
+
+The user asks:
+
+> **"How many casual leaves can an employee take?"**
+
+Your knowledge base contains many chunks:
+
+```text
+Chunk 1 → Purpose of the leave policy
+Chunk 2 → Scope
+Chunk 3 → Earned Leave
+Chunk 4 → Casual Leave
+Chunk 5 → Sick Leave
+Chunk 6 → Maternity Leave
+Chunk 7 → Paternity Leave
+...
+```
+
+The retrieval system should find:
+
+```text
+Chunk 4 → Casual Leave
+```
+
+because it contains the information needed to answer the question.
+
+So:
+
+```text
+User Question
+      ↓
+   Retrieval
+      ↓
+Relevant Chunk(s)
+```
+
+---
+
+# 1. Basic Retrieval Without Embeddings
+
+Before learning vector retrieval, let's understand the simplest form.
+
+Imagine:
+
+```python
+documents = [
+    "Employees are entitled to 18 days of Earned Leave per year.",
+    "Employees are entitled to 8 days of Casual Leave per year.",
+    "Employees are entitled to 8 days of Sick Leave per year.",
+    "Eligible employees may apply for maternity leave.",
+]
+```
+
+Our question:
+
+```python
+query = "How many casual leaves are available?"
+```
+
+A very simple keyword-based retrieval could be:
+
+```python
+documents = [
+    "Employees are entitled to 18 days of Earned Leave per year.",
+    "Employees are entitled to 8 days of Casual Leave per year.",
+    "Employees are entitled to 8 days of Sick Leave per year.",
+    "Eligible employees may apply for maternity leave.",
+]
+
+query = "How many casual leaves are available?"
+
+for document in documents:
+    if "casual" in document.lower():
+        print(document)
+```
+
+Output:
+
+```text
+Employees are entitled to 8 days of Casual Leave per year.
+```
+
+This is retrieval, but it is **very basic keyword retrieval**.
+
+---
+
+# 2. Why Keyword Retrieval Isn't Enough
+
+Suppose the user asks:
+
+> **"How many personal days can I take?"**
+
+But the document says:
+
+> **"Employees are entitled to 8 days of Casual Leave per calendar year."**
+
+There is no exact word `"personal"` in the document.
+
+A keyword search may fail.
+
+This is where **semantic retrieval** becomes useful.
+
+Instead of looking only for the same words, semantic retrieval tries to understand the **meaning** of the question.
+
+```text
+"personal days"
+      ↓
+Meaning
+      ↓
+"Casual Leave"
+```
+
+---
+
+# 3. Embeddings for Retrieval
+
+This is the important part of modern RAG.
+
+We convert text into vectors called **embeddings**.
+
+For example:
+
+```text
+"How many casual leaves can I take?"
+              ↓
+        Embedding Model
+              ↓
+ [0.21, -0.43, 0.87, 0.12, ...]
+```
+
+And our chunks are also converted into vectors:
+
+```text
+Chunk 1 → [0.10, 0.32, 0.11, ...]
+Chunk 2 → [0.21, -0.41, 0.81, ...]
+Chunk 3 → [0.02, 0.73, 0.15, ...]
+```
+
+Then we calculate **similarity** between the query vector and chunk vectors.
+
+```text
+Query
+  ↓
+Embedding
+  ↓
+Similarity Search
+  ↓
+Most similar chunks
+```
+
+---
+
+# 4. Simple Python Example
+
+For learning purposes, let's use **FAISS** with a sentence-transformer embedding model.
+
+Install:
+
+```bash
+pip install sentence-transformers faiss-cpu
+```
+
+Then:
+
+```python
+from sentence_transformers import SentenceTransformer
+import faiss
+import numpy as np
+
+documents = [
+    "Employees are entitled to 18 days of Earned Leave per year.",
+    "Employees are entitled to 8 days of Casual Leave per year.",
+    "Employees are entitled to 8 days of Sick Leave per year.",
+    "Eligible employees may apply for maternity leave.",
+    "Employees may request up to five working days of Marriage Leave.",
+]
+
+# Load embedding model
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+# Convert documents into embeddings
+document_embeddings = model.encode(documents)
+
+# Convert embeddings to numpy float32
+document_embeddings = np.array(
+    document_embeddings,
+    dtype="float32"
+)
+
+# Create FAISS index
+dimension = document_embeddings.shape[1]
+
+index = faiss.IndexFlatL2(dimension)
+
+# Add document embeddings
+index.add(document_embeddings)
+
+# User question
+query = "How many casual leaves can an employee take?"
+
+# Convert query into embedding
+query_embedding = model.encode([query])
+query_embedding = np.array(
+    query_embedding,
+    dtype="float32"
+)
+
+# Retrieve top 2 documents
+distances, indices = index.search(query_embedding, k=2)
+
+print("Retrieved documents:")
+
+for i in indices[0]:
+    print(documents[i])
+```
+
+You should get something similar to:
+
+```text
+Retrieved documents:
+
+Employees are entitled to 8 days of Casual Leave per year.
+Employees are entitled to 8 days of Earned Leave per year.
+```
+
+The exact ranking can vary depending on the embedding model/index.
+
+---
+
+# 5. What's Happening Internally?
+
+Let's break the code into the RAG retrieval pipeline.
+
+### Step 1 — Documents
+
+```python
+documents = [...]
+```
+
+These are your knowledge sources.
+
+In a real application, these could come from:
+
+```text
+PDF
+DOCX
+TXT
+HTML
+Database
+Web pages
+```
+
+---
+
+### Step 2 — Embedding
+
+```python
+document_embeddings = model.encode(documents)
+```
+
+We convert:
+
+```text
+Text
+ ↓
+Embedding Model
+ ↓
+Vector
+```
+
+For example:
+
+```text
+"Casual Leave"
+       ↓
+[0.21, -0.43, 0.87, ...]
+```
+
+---
+
+### Step 3 — Vector Database / Index
+
+```python
+index.add(document_embeddings)
+```
+
+We store the vectors in a searchable index.
+
+Here we're using:
+
+**FAISS**
+
+FAISS isn't a full traditional database; it's a library for efficient similarity search over vectors.
+
+In production, you may encounter:
+
+* Qdrant
+* Pinecone
+* Weaviate
+* Milvus
+* ChromaDB
+* PostgreSQL + pgvector
+
+---
+
+### Step 4 — User Query
+
+```python
+query = "How many casual leaves can an employee take?"
+```
+
+---
+
+### Step 5 — Query Embedding
+
+```python
+query_embedding = model.encode([query])
+```
+
+The query is converted into a vector too.
+
+```text
+Question
+   ↓
+Embedding Model
+   ↓
+Query Vector
+```
+
+---
+
+### Step 6 — Similarity Search
+
+```python
+distances, indices = index.search(
+    query_embedding,
+    k=2
+)
+```
+
+`k=2` means:
+
+> **Return the 2 most similar documents.**
+
+So:
+
+```text
+Query
+  ↓
+Compare against vectors
+  ↓
+Similarity
+  ↓
+Top 2
+  ↓
+Relevant chunks
+```
+
+---
+
+# 6. Retrieval in a Complete RAG System
+
+Now connect this with the chunking you learned earlier.
+
+```text
+              leave_policy.txt
+                     ↓
+                  Chunking
+                     ↓
+          ┌──────────┼──────────┐
+          ↓          ↓          ↓
+       Chunk 1    Chunk 2    Chunk 3 ...
+          ↓          ↓          ↓
+       Embedding  Embedding  Embedding
+          ↓          ↓          ↓
+          └──────────┬──────────┘
+                     ↓
+              Vector Database
+                     ↑
+                     │
+              User Question
+                     ↓
+                  Embedding
+                     ↓
+              Similarity Search
+                     ↓
+             Top-K Relevant Chunks
+                     ↓
+                    LLM
+                     ↓
+                  Answer
+```
+
+This is the heart of a basic RAG application.
+
+---
+
+# 7. Retrieval vs Generation
+
+This distinction is **very important**.
+
+### Retrieval
+
+Answers:
+
+> **"Which information should I give the LLM?"**
+
+```text
+Question
+   ↓
+Retriever
+   ↓
+Relevant chunks
+```
+
+### Generation
+
+Answers:
+
+> **"What answer should I generate using that information?"**
+
+```text
+Question + Retrieved Context
+             ↓
+            LLM
+             ↓
+           Answer
+```
+
+Together:
+
+```text
+             RAG
+              │
+       ┌──────┴──────┐
+       ↓             ↓
+  Retrieval      Generation
+       ↓             ↓
+ Find context    Generate answer
+       │             │
+       └──────┬──────┘
+              ↓
+         Final Answer
+```
+
+---
+
+# 8. One Important Term: Top-K
+
+You'll hear **Top-K retrieval** frequently.
+
+Suppose you have 1,000 chunks.
+
+User asks:
+
+> "How many casual leaves are available?"
+
+Instead of sending all 1,000 chunks to the LLM, the retriever might return only the best 3:
+
+```python
+k = 3
+```
+
+Meaning:
+
+> **Retrieve the 3 most relevant chunks.**
+
+For example:
+
+```text
+1000 chunks
+    ↓
+Similarity Search
+    ↓
+Top 3
+    ↓
+LLM
+```
+
+This saves context space and usually gives the model more focused information.
+
+---
+
+## ⭐ Remember this
+
+For your current learning, remember these five steps:
+
+```text
+1. Documents
+      ↓
+2. Chunking
+      ↓
+3. Embeddings
+      ↓
+4. Similarity Search
+      ↓
+5. Relevant Chunks
+```
+
+That's **retrieval**.
+
+Then:
+
+```text
+Relevant Chunks
+      +
+User Question
+      ↓
+     LLM
+      ↓
+Final Answer
+```
+
+That's where **RAG generation** comes in.
+
+### The key sentence
+
+> **Retrieval is the process of finding the most relevant chunks from your knowledge base for a user's query; in modern RAG systems, this is commonly done using embeddings and similarity search.**
