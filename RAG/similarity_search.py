@@ -33,11 +33,11 @@ model = SentenceTransformer("all-MiniLM-L6-v2")
 # 2. Define your stored database documents
 stored_documents = [
     "Python is an interpreted programming language.",
+<<<<<<< HEAD
     "I saw a huge python snake at the zoo yesterday.",
+=======
+    "I saw a huge python snake at the zoo yesterday."
 ]
-
-# 3. Define the user's search query
-user_query = "computer coding and scripts"
 
 # 4. Convert everything into 384-dimensional embeddings
 doc_embeddings = model.encode(stored_documents)

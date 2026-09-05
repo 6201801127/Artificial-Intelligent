@@ -4,7 +4,6 @@
 
 # 2. Initialize Client and Collection
 import os
-
 import chromadb
 from sentence_transformers import SentenceTransformer
 
