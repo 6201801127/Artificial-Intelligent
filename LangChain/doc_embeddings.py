@@ -42,6 +42,7 @@ def load_documents(folder_path: str) -> list[Document]:
         documents.extend(loaded_documents)
     return documents
 
+
 folder_path = "artificial-intelligent/LangChain/docs"
 documents = load_documents(folder_path)
 # print(f"Number of documents loaded: {len(documents)}")
@@ -143,7 +144,7 @@ rag_chain.invoke({"When was apex logistics founded?"})
 rag_chain = (
     {"context": retriever | doc2str, "question": RunnablePassthrough()}
     | prompt
-    | llm 
+    | llm
     | strOutputParser()
 )
 
