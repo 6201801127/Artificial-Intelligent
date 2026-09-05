@@ -4,7 +4,9 @@ from langchain_chroma import Chroma
 from langchain_community.document_loaders import Docx2txtLoader, PyPDFLoader
 from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
 from langchain_core.documents import Document
+from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnablePassthrough
 from langchain_ollama import ChatOllama, OllamaEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
@@ -121,16 +123,16 @@ retriever.invoke("When was apex logistics founded?")
 
 
 # Chatpromp template
-template = """Answere the question based only on the following 
+template = """Answere the question based only on the following
 Context: {context}
 Question: {question}
-Answere: 
+Answere:
 """
 prompt = ChatPromptTemplate.from_template(template)
 
 # Runnable pass through
 # from langchain.schema.runnable import RunnablePassthrough
-from langchain_core.runnables import RunnablePassthrough
+
 
 rag_chain = {"Context": retriever, "question": RunnablePassthrough()} | prompt
 
@@ -149,7 +151,7 @@ rag_chain = (
     {"context": retriever | doc2str, "question": RunnablePassthrough()}
     | prompt
     | llm
-    | strOutputParser()
+    | StrOutputParser()
 )
 
 question = "When was apex logistics founded?"

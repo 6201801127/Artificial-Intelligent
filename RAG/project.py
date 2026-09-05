@@ -19,7 +19,7 @@ question = "What is the average placement package?"
 
 document_vectors = []
 
-for document in documents:
+for _document in documents:
     result = client.models.embed_content(model="gemini-embedding-2", contents=documents)
     vector = result.embeddings[0].values
     document_vectors.append(vector)

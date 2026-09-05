@@ -1,4 +1,5 @@
 import chromadb
+from sentence_transformers import SentenceTransformer, util
 
 """ ****Method 1: Using ChromaDB (The Easy Way)
 """
@@ -20,12 +21,11 @@ print("Distance Score:", results["distances"][0])
 
 """ ****Method 2: Using Sentence Transformers (The Hard Way)
 
-To see how those 384 numbers are compared without using a database, you can use Cosine Similarity. 
+To see how those 384 numbers are compared without using a database, you can use Cosine Similarity.
 Cosine similarity measures the angle between two arrows in a geometric space.
 Score of 1.0: The sentences mean the exact same thing.
 Score of 0.0: The sentences are completely unrelated.
 """
-from sentence_transformers import SentenceTransformer, util
 
 # 1. Load the model
 model = SentenceTransformer("all-MiniLM-L6-v2")
