@@ -1,11 +1,16 @@
 import os
 
+from langchain.chains import create_history_aware_retriever, create_retrieval_chain
+from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_chroma import Chroma
 from langchain_community.document_loaders import Docx2txtLoader, PyPDFLoader
-from langchain_community.embeddings.sentence_transformer import SentenceTransformerEmbeddings
+from langchain_community.embeddings.sentence_transformer import (
+    SentenceTransformerEmbeddings,
+)
 from langchain_core.documents import Document
+from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.runnables import RunnablePassthrough
 from langchain_ollama import ChatOllama, OllamaEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -157,3 +162,51 @@ rag_chain = (
 question = "When was apex logistics founded?"
 response = rag_chain.invoke(question)
 print(response)
+
+
+# Conversational RAG
+
+# Hendlling followup questions
+
+# example conversesion
+chat_history = []
+chat_history.extend([HumanMessage(content=question), AIMessage(content=response)])
+print(chat_history)
+
+contextualize_q_system_prompt = (
+    "Given a chat history and the latest user question",
+    "rewrite the question so that it can be understood without the chat history.",
+    "Do NOT answer the question.",
+    "Only return the reformulated question if necessary.",
+)
+
+contextualize_q_prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", contextualize_q_system_prompt),
+        MessagesPlaceholder("chat_history"),
+        ("human", "{input}"),
+    ]
+)
+
+contextualize_chain = contextualize_q_prompt | llm | StrOutputParser()
+contextualize_chain.invoke({"input": "Where is the headquarters?", "chat_history": chat_history})
+
+history_aware_retriever = create_history_aware_retriever(llm, retriever, contextualize_q_prompt)
+history_aware_retriever.invoke(
+    {"input": "Where is the headquarters?", "chat_history": chat_history}
+)
+
+qa_prompt = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            "You are a helpfull assistant. Use the following context to answere the user's question.",
+        ),
+        ("system", "Context:{context}"),
+        MessagesPlaceholder(variable_name="chat_history"),
+        ("human", "{input}"),
+    ]
+)
+question_answere_chain = create_stuff_documents_chain(llm, qa_prompt)
+rag_chain = create_retrieval_chain(history_aware_retriever, question_answere_chain)
+rag_chain.invoke({"input": "Where it is headquarter", "chat_history": chat_history})
