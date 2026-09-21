@@ -1,7 +1,7 @@
 from pypdf import PdfReader
 
 # Load the PDF file
-reader = PdfReader("D:\\Learning\\artificial-intelligent\\leave_policy.pdf")
+reader = PdfReader("D:\\Learning\\artificial-intelligent\\docs\\leave_policy.pdf")
 
 # Get total number of pages
 total_pages = len(reader.pages)
